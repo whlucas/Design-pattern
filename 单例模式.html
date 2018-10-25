@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <script>
+            // 单例模式
+            // 创造型模式的一种,他主要研究如何创造一个对象,来节约资源
+            // 定义: 保证一个类只有一个实例,并提供一个访问他的全局访问点
+
+            // 应用场景
+            // 点开弹窗关闭弹窗,希望就只有一个弹窗
+            // 贪吃蛇的食物只需要一个,不需要总是创建新的
+
+
+            // 用代码来实现
+
+            // 我如何做到两次new返回的对象是同样的一个
+            function Test (name) {
+                // 我在new的时候执行的是这么一个我看不到的操作
+                // var this = Object.create(Test.prototype)
+                // return this
+
+                if(typeof Test.instance === 'object') { // 如果我这个属性上面有值,那说明我不是第一次new的
+                    return Test.instance; // 就直接把我绑定在这个属性上面的对象返回
+                    // 且在new的时候如果我显试的返回了一个对象,就不会隐式的返回了一个this了
+                }else{  // 如果是第一次new的我就来老老实实的创建对象
+                    this.name = name;
+                    Test.instance = this; // 我在这里给test加一个属性,让他等于this,也就是new的时候给这个Test的instance属性上面绑定了一个对象,Test是全局的变量,所以这个属性一直都会有
+                    // 然后会默默的return this
+                }
+            }
+            var a = new Test('one');
+            var b = new Test()
+            console.log(a === b)
+
+
+            // 但是这种方式是不符合开闭原则的
+            // 这个instance属性被暴露在外面可以被随意的修改
+            var a = new Test('one');
+            Test.instance = {} // 当我这样改了他的值了以后自然就不相等了
+            var b = new Test()
+            console.log(a === b)
+
+
+            // 单例模式实现的思想
+            // 我第一次创建对象的时候我要把它存起来,之后再去创建的时候要去判断是不是第一次,不是的话就把之前的返回
+
+
+            // 还有的是这么写的
+            function Test(name) {
+                var instance = this;
+                this.name = name;
+                Test = function() { // 这里我在全局上把这个Test重新定义,并且这是一个闭包,因为Test是全局变量,这个函数被保存到了外部
+                    return instance; // 当我第一次之后new的时候,虽然他依然会产生一个this,但是他这里返回的是我之前创建的时候存到里面的this了,实现了单例模式
+                }
+            }
+            // var a = new Test('one');
+            // var b = new Test();
+            // console.log(a === b);
+
+            // 然而这么写也不好
+            var a = new Test('one');
+            // 我这里经历过第一次new了之后,之后的Test就不是我的构造函数了,是第一次new出来的对象,
+            Test.prototype.lastName = 'D';
+            // 这句话就相当于添加一个静态属性,没有办法通过实例化出来的方法去找
+            var b = new Test();
+            // 所以下面这两行打印undefined
+            console.log(a.lastName);
+            console.log(b.lastName);
+
+
+            // 写一个好的单例模式的构造函数
+            // 圣杯 (象征着永生)
+            // js中象征着永生的是全局变量和闭包
+
+            // 这里用闭包来做
+            // 注意一下这个立即执行函数的形式,一般一个高端一点的方法都会这么来写
+            var Test = (function (){
+                var instance;  // 闭包: 这里把他定义在外部相当于一个全局变量,且不会暴露在全局
+                return function (name){
+                    // var instance; 写在里面的话就是每次进来都是一个新的全局变量了
+                    if (typeof instance === 'object'){  // 如果里面有值的话直接返回之前的对象
+                        return instance;
+                    }else {
+                        instance = this;
+                        this.name = name;
+                    }
+                }
+            })()
+
+            // 由于这个Test一直是哪个构造函数,所以可以往原型链上面加东西
+            // 且由于闭包的原因
+            var a = new Test('aaa');
+            Test.prototype.lastName = 'deng'
+            var b = new Test();
+            console.log(a === b, a.lastName, b.lastName)  //都好使
+
+
+            // 上面只是停留在我写一个单例模式的构造函数就这么写
+            // 下面我想要一个本来不是单例的构造函数,变成单例的构造函数
+        </script>
+    </body>
+
+</html>
