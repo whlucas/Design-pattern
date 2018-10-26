@@ -5,6 +5,7 @@
         <title>Title</title>
     </head>
     <body>
+        <button id = 'oBtn'>login</button>
         <script>
             // 单例模式
             // 创造型模式的一种,他主要研究如何创造一个对象,来节约资源
@@ -101,6 +102,43 @@
 
             // 上面只是停留在我写一个单例模式的构造函数就这么写
             // 下面我想要一个本来不是单例的构造函数,变成单例的构造函数
+
+            // 创建弹窗
+            var CreateAlert = function (test) {
+                var oDiv = document.createElement('div')
+                oDiv.style.display = 'none';
+                oDiv.innerText = test;
+                document.body.appendChild(oDiv);
+                return oDiv;  // 这里return一个oDiv为了之后好操作
+            };
+
+            oBtn.onclick = function() {
+                var oDiv = CreateAlert('hello duyi') // 这样就在变量里面返回了一个div只不过没有显示出来
+                oDiv.style.display = 'block';
+            };
+
+            // 我如果这么去写话,我点一下就插入一个div,点一下就插入一个div,下一个插入的和上一个不是同一个
+
+            // 我现在想让他变成一个单例的写法
+            var singleAlert = (function() {
+                var oDiv = undefined; //由于 typeof null也是object,所以不能用null
+                return function (text) {
+                    if(typeof oDiv === 'object'){
+                        return oDiv;
+                    }
+                    oDiv = document.createElement('div')
+                    oDiv.style.display = 'none';
+                    oDiv.innerText = text;
+                    document.body.appendChild(oDiv)
+                    return oDiv;
+                }
+            })()
+
+            oBtn.onclick = function() {
+                var oDiv = new singleAlert('hello duyi') // 这样就在变量里面返回了一个div只不过没有显示出来, 这里new不new都一样,只不过我new了以后就在函数里面多出来了一个this,
+                oDiv.style.display = 'block';
+            };
+
         </script>
     </body>
 
