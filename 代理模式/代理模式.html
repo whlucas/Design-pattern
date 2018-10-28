@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>代理模式</title>
+        <style>
+            div{
+                display: inline-block;
+                border: 1px solid  black;
+            }
+            div img{
+                width: 300px;
+                height: 200px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="demo"></div>
+        <script>
+            // 代理 
+            // 定义: 为一个对象提供一种代理以控制这个对象的访问
+
+            // 代理对象起到类似中介的作用,会增加一些功能(如,校验,合并),也会去掉一些原有对象的功能
+            // 比如它会帮你收集一些请求之后统一发送,再比如它会帮你检查一下请求有没有什么问题,起到一个保护的作用
+
+            // 几种代理的类型:
+            // 虚拟代理: 虚拟代理是把一些开销很大的对象,延迟到真正需要它的时候去创建执行
+            //          图片加载,文件上传
+            // 安全代理: 控制真实对象的访问权限,有些不合格的东西不让发
+            //          登录操作后才能看全部的功能
+            // 远程代理: 一个对象将不同空间的对象进行局部代理
+            //          监控多个对象的状态,总店监控分店
+            // 智能代理: 调用对象代理,处理另外一些事情如垃圾回收机制等,增加一些额外的服务
+            //          提供额外的其他服务, 火车站代售处
+
+            // 举个例子
+            var mrDeng = {
+                sendFlower: function (target) {
+                    var Flower = 'sunflower';
+                    target.receiveFlower(Flower)
+                }
+            }
+
+            // goddess(女神)
+            var goddess = {
+                mood: null,
+                receiveFlower: function (Flower) {
+                    // true good  false bad
+                    this.mood ? console.log('ok') : console.log('get out')
+                },
+                changeMood: function () {
+                    this.mood = Math.random() > 0.5; // 随机的返回true or false
+                },
+                createMood: function () {
+                    var self = this;
+                    self.changeMood();
+                    setInterval(function() { // 每隔400毫秒改变一下心情
+                        self.changeMood();
+                    },400)
+                }
+            }
+            goddess.createMood(); // 先创建一个心情
+
+            // mrDeng.sendFlower(goddess);
+
+            // 现在这个邓哥送花由于女神的心情时好时坏,不稳定
+            // 我想通过一个代理来管控一下,保证他成功
+
+            var cstProxy = {  // 这就是我的代理
+                proxyFlower: function (target) {  // 调用的话调用这个方法,传入需要监听的对象
+                    this.listenMood(target, function() {  // 里面调用我这个代理里面的监听的方法,传入监听的对象和满足条件的时候需要执行的函数
+                        mrDeng.sendFlower(target)
+                    })
+                },
+                listenMood: function (target, cb) {
+                    var timer = setInterval(function () {
+                        if (target.mood) { // 心情好的情况下送花
+                            cb();
+                            clearInterval(timer) // 送花了就不要监听了
+                        }
+                    }, 500);
+                }
+            }
+
+            cstProxy.proxyFlower(goddess); // 通过我这个代理去送花就能每次都成功了
+
+
+            // 图片的懒加载
+            // 什么都不处理: 它会依据网络的快慢,将图片一点一点的加载出来
+            // 做一个加载完成之后再显示,但是会有一段时间是完全没有图片的
+            // 我们想要通过代理,实现在图片没有完全加载回来之前,展示一个站位图片,请求成功的时候出发onload事件,将请求回来的数据加载出来
+
+            var MyImage = function(id) {
+                var oImg = new Image(); // 我这个new Image和document.createElement('img')这两个返回的是同一个东西,他们两个返回的dom对象的构造函数都是HTMLImageElement
+                this.setSrc = function (src) {
+                    oImg.src = src;
+                };
+                document.getElementById(id).appendChild(oImg);
+            }
+
+            // 这个图片作为占位图片
+            // var oMyImg = new MyImage('demo'); // 这个执行完页面中就已经有这么个图片了
+            // oMyImg.setSrc('./站位.jpg'); // 填加完路径了它就显示出来了
+
+
+            // 写一个代理
+            var ProxyImage = (function () {
+                var oMyImg = new MyImage('demo');
+                var oNewImage = new Image();
+                oNewImage.onload = function() {
+                    oMyImg.setSrc(oNewImage.src); // 数据请求回来执行这个,替换原来的站位图片
+                };
+                return function(src) { // 这个立即执行函数一旦执行就先执行这个
+                    oMyImg.setSrc('./站位.jpg');
+                    oNewImage.src = src; // 这一行请求数据
+                }
+            })();
+
+            ProxyImage('https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540743911708&di=1d802670ad419166e59c49100287a6ed&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2F2017-10-13%2F59e05bff54797.jpg');
+
+
+
+
+
+
+
+
+
+
+        </script>
+    </body>
+</html>
