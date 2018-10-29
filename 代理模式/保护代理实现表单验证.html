@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>表单验证</title>
+    </head>
+    <body>
+        <div>
+            用户名: <input type="text" id = 'userDom' name = 'username'>
+            <span id="showUser"></span>
+            密码: <input type="password" id = 'psDom' name = 'code'>
+            <span id="showCode"></span>
+            <button id= 'submit'>提交</button>
+        </div>
+
+        <script>
+            // 保护代理
+            // 前端这一块尽量能给后端减减压,帮后端做一些校验
+
+            // 我先写一个表单,这个肯定是很low,是我们一上来就写出来的东西
+            // 然后再用我的保护代理对他做一个修正
+
+            // 要求用户名长度不能超过四个字,超过了我就提示你超过了四个字
+            // 密码的长度不能低于6个字且不能为空
+
+            // 先假定数据是可以发送成功的
+            let flag = true; // 标志允不允许发送网络请求
+            submit.onclick = function () {
+                if(userDom.value == ''){ // 获得我这个用户名标签里面的值,看看他是不是空值
+                    flag = false; // 如果是控制就不能提交
+               }
+            }
+
+            function Request () {
+
+            }
+
+        </script>
+    </body>
+</html>
