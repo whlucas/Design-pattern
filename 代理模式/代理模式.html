@@ -111,7 +111,7 @@
                     oMyImg.setSrc(oNewImage.src); // 数据请求回来执行这个,替换原来的站位图片
                 };
                 return function(src) { // 这个立即执行函数一旦执行就先执行这个
-                    oMyImg.setSrc('./站位.jpg');
+                    oMyImg.setSrc('./占位.jpg');
                     oNewImage.src = src; // 这一行请求数据
                 }
             })();
