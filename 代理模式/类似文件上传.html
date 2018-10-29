@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>文件上传</title>
+        <style>
+            div{
+                width:100px;
+                height: 100px;
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <!--这个和文件上传相似,我想点击了好几个按钮之后再出发操作-->
+        <!--就相当于我收集和很多个文件一起上传的效果一样-->
+        <div id="show">duyi</div>
+        <button type = 'bg'>add greenBg</button>
+        <button type = "cl">blueClolor</button>
+        <button type = "fs">add fontSize</button>
+        <button type = "fw">add fontWeight</button>
+        <button type = "op">add opacity</button>
+        <script>
+            var oDiv = document.getElementById('show');
+            var oButtonArray = document.getElementsByTagName('button');
+
+            // 代理的核心思想是:
+            // 本来A和C之间的操作,我通过一个B去控制A和C之间的互动,至于是如何去控制就是自己可以随意发挥了,可以用定时器,可以用按钮来控制操作
+
+            // 我现在写一个代理对效果实现的过程进行一些的控制:实现我点了很多下之后,停下来两秒钟不点了他再去执行我需要的操作
+            let  ProxyRequest = function (func){
+                let cache = []; // 用来保存我执行的操作
+                let timer = null; // 用来统计时间
+                return function () {
+                    cache.push(this.getAttribute('type')); // 因为这个函数最后要返回到点击事件里面,这里就缓存我鼠标点击的时候需要改变的属性我每点击一次缓存一下,每点击一次缓存一下,最后我缓存的东西就都存在我的cache里面了
+                    clearTimeout(timer); // 在点击的时候先把这个计时器清零,保证每一次点击的时候都是经过两面中再执行
+                    timer = setTimeout(function(){  // 每收集两秒钟的操作执行一下
+                        func(oDiv,cache);// 把我收集好的参数放到原来的函数里面去执行
+                        cache = []; // 执行完成后把这个数组初始化
+                    }, 2000)
+                }
+            };
+            // 我调用这个代理他给我返回一个新的改变style的函数
+            let realChangeStyle = ProxyRequest(changeStyle);
+
+
+
+
+            // 以下是正常可以执行的代码,上面的代理只是稍微对下面的代码进行了一些控制
+            for (let i = 0 ;i < oButtonArray.length; i++) {
+                // oButtonArray[i].onclick = function() { // 每一个dom都绑定一个事件,当点击的时候就改变相应的样式
+                //     changeStyle(oDiv, this.getAttribute('type'))
+                // }
+
+                // 当我有了代理之后就可以把代理返回的新的函数放到这个里面来
+                oButtonArray[i].onclick = realChangeStyle;
+            };
+
+            // 他可以理解为后台的代码,后台的代码应该可以实现上传一个文件的时候怎么处理,也应该有当我上传很多个图片的时候怎么处理
+
+            function changeStyle(dom, typeArr) {
+                // if(type = "bg"){   // 这个里面可以写很多判断,当type值是什么的时候就干什么事
+                //     dom.style.backgroundColor = 'green';
+                // }
+
+                // 上面那么写太low了,现在是收集到很多操作了,我想让他一起来执行
+                let typeObj = {
+                    bg: ['backgroundColor', 'green'],
+                    cl: ['color', 'blue'],
+                    fs: ['fontSize', '24px'],
+                    fw: ['fontWeight', 'bold'],
+                    op: ['opacity', '0.3']
+                };
+                if(typeArr.constructor === Array){ // 如果我多个值一起变,传一个数组进来
+                    typeArr.forEach(function(ele){
+                        dom.style[typeObj[ele][0]] = typeObj[ele][1]; // 如果传入数组就遍历数组
+                    })
+
+                }else { //如果我传入的是单个的属性我怎么造作
+                    // 如果我不一起操作的的话,就一个一个执行的话我就只需要这样写就好了
+                    dom.style[typeObj[typeArr][0]] = typeObj[typeArr][1]; // 直接在这个对象里面去找对应的值
+                }
+            }
+
+
+        </script>
+    </body>
+</html>
