@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <div id="demo"></div>
+        <button id="btn">click</button> // 按钮来让他展示
+        <script>
+
+            // 预加载 -> 要在计算机性能较好的时候,先发送一次请求,只需要请求一个图片一次就够了,其他的要用到这个占位图片的取缓存就行 https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540791976046&di=972d20c448f52e037f1841bffe88235b&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2F2017-10-13%2F59e05bff54797.jpg
+
+            // 懒加载 -> 监控真正要展示的图片内容 是否有被加载成功, 等他加载成功之后再去替换掉预加载插入的图片,不做监控的话就会出现一点一点的刷出来,看起来不好 https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540792013576&di=3e08dcf0a4ee0952d5f2ac3ff856cdd0&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201504%2F21%2F20150421H0102_vxN8d.jpeg
+
+
+            function MyImage(_id){
+                var oImg = new Image(); // document.createElement('img')
+                this.setSrc = function(_src) {
+                    oImg.src = _src;
+                };
+                document.getElementById(_id).appendChild(oImg)
+            }
+            // new MyImage('demo').setSrc('https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540743911708&di=1d802670ad419166e59c49100287a6ed&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2F2017-10-13%2F59e05bff54797.jpg');
+
+
+            // 我需要通过代理实现,在页面打开的时候利用计算机过剩的能力预加载一个图片插入,然后实现一个懒加载: 再执行一个开销很大的操作的,把数据集中起来一并去发送,这样会比一张一张请求图片要好很多
+
+            var ProxyImage = (function() {
+                var oImg = new Image();
+                var oMyImage = new MyImage('demo');
+                oImg.onload = function() { // 这里要对下面那一行的请求做一个监控
+                    setTimeout(function () { // 模拟网络很差来个延迟
+                        oMyImage.setSrc(oImg.src); // 就把demo中的这个图片替换
+                    },1000)
+                };
+                return function(occupuySrc,src) {
+                    oMyImage.setSrc(occupuySrc);
+                    oImg.src = src; // 只要执行到这句话就会发送网络请求
+                }
+            })();
+            ProxyImage('https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540791976046&di=972d20c448f52e037f1841bffe88235b&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2F2017-10-13%2F59e05bff54797.jpg', 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1540792013576&di=3e08dcf0a4ee0952d5f2ac3ff856cdd0&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201504%2F21%2F20150421H0102_vxN8d.jpeg')
+        </script>
+    </body>
+</html>
