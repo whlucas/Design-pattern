@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>工厂方法模式</title>
+    </head>
+    <body>
+        <script>
+            // 工厂方法模式
+            // 不再有一个唯一的工厂类创建产品,而是将不同的产品交给对应的工厂子类去创建.每个产品由负责生产的子工厂来创造.如果添加新的产品,需要做的是添加新的子工厂和产品,而不需要修改其他的工厂代码
+
+
+            // 工厂方法模式组成:
+            // 1. 抽象工厂类: 负责定义创建产品的公共接口
+            // 2. 产品的子工厂: 继承抽象工厂类, 实现抽象工厂类提供的接口
+            // 3. 每一种产品由各自的产品类
+
+            // 工厂方法模式
+
+            // 抽象工厂类
+            function PlaneFactory () {
+
+            }
+
+            // 子类工厂都可以使用的公共方法
+            PlaneFactory.prototype.touch = function () {
+                this.blood -= 50;
+                if (this.blood === 0){
+                    this.die();
+                }
+            };
+
+
+            // 创建对象的接口
+            // 我们没有在他的原型上面直接的去创建接口,如果我把这个接口创建到了原型上面,就必须要先new出来一个对象,然后再调用这个对象的create的方法,就不太符合这个工厂的称呼,这个工厂本来就是创建对象的.代码的可读性不是那么的强
+            // 所以我在这里直接在这个函数上面添加静态属性去创建接口
+            PlaneFactory.create = function(type) {
+                // 继承的思想
+
+                // 先判断一下我传入的这个类型,是不是存在符合这个类型的子类工厂
+                if(PlaneFactory.prototype[type] === undefined) {
+                    throw 'no this contructor';
+                }
+
+                // 如果他的子类没有和父级形成继承关系的话,就让他的子类继承一下
+                // 为什么要进行这么一个判断,因为我这个每次都要重新new创建一个对象去继承,这个计算量是不能和这个判断去比的,所以这样会节省性能
+                if(PlaneFactory.prototype[type].prototype.__proto__ !== PlaneFactory.prototype){
+                    // 继承:子工厂的父级为原来的工厂
+                    PlaneFactory.prototype[type].prototype = new PlaneFactory();
+                }
+
+                // 创建对象
+                var arg = [].slice.call(arguments, 1); // 把第一位截掉,剩下的就是x,和y的坐标
+                // 我想把这个x,y作为参数传进去,我要怎么传,可以用apply的方式传,但这么传就是可读性差了
+                // let newPlane = new PlaneFactory.prototype[type].apply(new PlaneFactory.prototype[type](), arg);
+                // 因为我们想穿一个数组进去,又不能用apply去传,就用es6里面的结构数组的形式去传
+                let newPlane = new PlaneFactory.prototype[type](...arg);
+                return newPlane;
+            };
+
+
+            // 真正的去定义一些子类的工厂
+            PlaneFactory.prototype.SmallPlane = function (x, y) { // 这些个小飞机在出生的时候是有坐标的
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 100;
+                this.blood = 100;
+                this.name = 'SmallPlane';
+
+            };
+            PlaneFactory.prototype.BigPlane = function (x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 150;
+                this.height = 150;
+                this.blood = 200;
+                this.name = 'bigPlane';
+            };
+            PlaneFactory.prototype.AttackPlane = function(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 125;
+                this.blood = 200;
+                this.name = 'AttackPlane';
+                this.attack = function () {
+                    console.log('biu')
+                }
+            }
+
+            // 最后我去生成对象的时候我是这么调用的
+            let oAp = PlaneFactory.create('AttackPlane', 10, 20);
+            let oSp = PlaneFactory.create('SmallPlane', 20, 30);
+            let oBp = PlaneFactory.create('BigPlane', 30, 40);
+
+            // 我之后如果想要给大家都添加上一个方法的话,就只需要在父类的原型上面去添加就可以了,这样所有的对象就都可以使用了
+            PlaneFactory.prototype.die = function () {
+                alert('boomb');
+            };
+
+            // 总结一下工厂方法模式
+            // 代码比简单工厂模式复杂了,引入了抽象层, 还有子工厂,这会增加代码的复杂度和理解难度.但是相比于简单工厂模式,代码的维护性和扩展性提高了,新增产品时,只需要增加对应的产品类和产品工厂类,不需要修改到抽象工厂类和其他自工厂,更加符合面向对象的开闭原则
+            // 当然具体场景具体分析,复杂性和扩展性相比如何舍去,在使用的号死后皆可实际场景去分析就和实际的
+
+            // 应用的时候:那贪吃蛇来说,再添加不同的方块的时候就可以这么来对我要添加的方块来进行管理
+        </script>
+    </body>
+</html>

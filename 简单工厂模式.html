@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>工厂模式</title>
+    </head>
+    <body>
+        <script>
+            // 工厂模式
+            // 属于创建型-研究如何高效的创建对象
+
+            // 定义: 工厂模式定义创建对象的借口,但是让子类去真正的实例化.也就是工厂方法将类的实例化延迟到子类
+
+            // 我先不用这个模式去创建对象
+
+            // 用一个最原始的方式来创建对象
+            let smallPlane = {
+                width: 100,
+                height: 100,
+                blood: 100,
+                touch: function () { // 碰一下血减50
+                    this.blood -= 50;
+                    if(this.blood === 0){
+                        console.log('die')
+                    }
+                },
+
+            }
+
+            // 这个太笨了,如果需要很多个飞机的话则需要重复的创建对象
+
+            // 所以我们后来运用构造函数的形式来创建对象
+            function SmallPlane () {
+                this.width = 100;
+                this.height = 100;
+                this.name = 'smallPlane'
+                this.blood = 100;
+                this.touch = function () {
+                    this.blood -=100;
+                    if(this.blood === 0){
+                        console.log('die');
+                    }
+                }
+            }
+
+            // 这样的话我就只需要每次new一个对象就可以了
+            // new SmallPlane();
+
+            // 但是这个飞机大战,肯定不止这一类飞机,他肯定是有很多种飞机
+            function BigPlane () {
+                this.width = 150;
+                this.height = 150;
+                this.blood = 200;
+                this.name = 'bigPlane';
+                this.touch = function () {
+                    this.blood -= 50;
+                    if (this.blood === 0){
+                        console.log('die')
+                    }
+                }
+            }
+
+            // 我们希望有一个统一的东西去管理,这样就不用每一个飞机都加重复的东西了
+            // 当然我们可以用子类继承父类的思想来实现,但这里我们想讲一个工厂的模式
+
+            // 工厂模式
+            // 定义一个创建飞机的接口,这个接口可以对创建出来的飞机做统一的管理,比如可以给所有创建出来的飞机添加统一的方法
+            function PlaneFactory (type) {
+                let newPlane = null;
+                switch (type) {
+                    // 通过对传进来的参数进行判断,调用相应的构造函数创建相应的对象
+                    case 'SmallPlane':
+                        newPlane = new SmallPlane();
+                        break;
+                    case 'BigPlane':
+                        newPlane = new BigPlane();
+                        break;
+                    case 'AttackPlane':
+                        newPlane = new AttackPlane();
+                        break;
+                }
+                // 我这里给创建出来的所有飞机添加一个死亡的功能,就不用再每一个对象里面来进行创建了
+                newPlane.die = function() {
+                    console.log('boom')
+                };
+                return newPlane;
+            }
+            PlaneFactory('SmallPlane'); // 传进去一个类型,返回一个相应的对象
+
+            // 工厂模式的优点
+            // 工厂类几种了所有对象的创建,便于对象的统一管理
+            // 对象的使用者仅仅是使用产品,实现了单一原则,当然也是在增加耦合度的前提下实现的
+            // 便于扩展,如果新增了一种业务,只需要增加相关的业务对象类的工厂类中的生产业务对象的方法,不需要修改去他的地方
+            // 比如多了这么一个攻击机,就只要去case里面添加一下就行了
+            function AttackPlane () {
+                this.width = 125;
+                this.height = 120;
+                this.blood = 100;
+                this.touch = function () {
+
+                };
+                this.attack = function () {
+                    console.log('biu')
+                };
+            }
+            // 确实违反了开闭原则,因为我在拓展的时候是直接修改里面的代码,而不是利用一个接口去拓展
+
+        </script>
+    </body>
+</html>
