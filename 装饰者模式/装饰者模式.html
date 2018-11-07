@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>装饰者模式</title>
+    </head>
+    <body>
+        <script>
+            // 要求我先提供一种资源池,里面会存入各种的方法名,当我想要将方法作用到对象的身上的时候只需要根据我这个资源池里面的方法名来讲方法添加到对象的身上
+
+            // 例如dnf里面的换装,先点上穿一下,然后统一操作
+
+            // 定义: 在不改变元对象的基础上,通过对其进行包装拓展(添加属性方法)
+
+            // 详细点: 能够在不改变对象自身的基础上,在程序运行期间给对象动态的添加职责.与继承相比.装饰着是一种更轻便灵活的做法.可以给不同对象各自添加新行为和属性.
+
+            // 实现:构造函数需要一个装饰资源池.提供相应的装饰方法.提供添加装饰方法的方法
+            // 保证这个对象能在脚本运行时候来动态的往上面添加方法,则需要增加许多的子类
+
+
+            // 我利用工厂方法模式的框架来添加上装饰着模式的功能
+            // 抽象工厂类
+            function PlaneFactory () {
+                // 用一个数组去接收我装饰者模式里面收集方法
+                this.decorate_list = []
+            }
+
+            // 装饰者模式实现
+
+            // 这个属性里面集合了我想要装饰对象的所有的方法
+            // 这些都是我脚本运行的时候可能需要添加到对象里面的方法
+            PlaneFactory.prototype.decorators = {
+                // 加生命的方法
+                eatOneLife: function (obj) {
+                    obj.blood += 100;
+                },
+                eatTwoLife: function (obj){
+                    obj.blood += 200;
+                },
+                eatShrinkLife: function (obj) {
+                    obj.blood -= 50;
+                }
+
+            };
+            // 收集对某对象的装饰描述
+            PlaneFactory.prototype.decorate = function(decorator){
+                // 当我多个类型的对象都想往list里面传方法的时候不会传到同一个this里面的
+                // 我每创建一个类型对象的时候都会重新new一个PlaneFactory,就会有不同的list
+                // 但是我这样只能保证每一个类有不同的对象,每个类创建的对象就共用一个list了
+                // 如果我想让每一个对象用自己的list就可以写到这个里面
+                // this.decorate_list = []
+                this.decorate_list.push(decorator);
+            };
+            // 让装饰方法作用在该对象的身上
+            PlaneFactory.prototype.update = function(){
+                for (let i = 0; i < this.decorate_list.length; i++){
+                    this.decorators[this.decorate_list[i]] && this.decorators[this.decorate_list[i]](this) // 把列表里面的每一个方法执行.执行的时候传入自己这个对象
+                }
+            };
+
+            // 我还可以给这个装饰者添加一些个方法
+            // 比如清空资源池
+            PlaneFactory.prototype.empty = function () {
+                this.decorate_list = [];
+            };
+            // 清除某一个方法
+            PlaneFactory.prototype.remove = function (type) {
+                this.decorate_list = this.decorate_list.filter(function(eleType){
+                    return !(eleType === type) // 我把不等于这个传进来的type值的方法返回给filter,然后替换掉原来的list
+                })
+
+            };
+
+            // 子类工厂都可以使用的公共方法
+            PlaneFactory.prototype.touch = function () {
+                this.blood -= 50;
+                if (this.blood === 0){
+                    this.die();
+                }
+            };
+
+
+            // 创建对象的接口
+
+            PlaneFactory.create = function(type) {
+
+                // 先判断一下我传入的这个类型,是不是存在符合这个类型的子类工厂
+                if(PlaneFactory.prototype[type] === undefined) {
+                    throw 'no this contructor';
+                }
+
+
+                if(PlaneFactory.prototype[type].prototype.__proto__ !== PlaneFactory.prototype){
+                    // 继承:子工厂的父级为原来的工厂
+                    PlaneFactory.prototype[type].prototype = new PlaneFactory();
+                }
+
+                // 创建对象
+                let arg = [].slice.call(arguments, 1);
+                let newPlane = new PlaneFactory.prototype[type](...arg);
+                return newPlane;
+            };
+
+
+            // 真正的去定义一些子类的工厂
+            PlaneFactory.prototype.SmallPlane = function (x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 100;
+                this.blood = 100;
+                this.name = 'SmallPlane';
+
+            };
+            PlaneFactory.prototype.BigPlane = function (x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 150;
+                this.height = 150;
+                this.blood = 200;
+                this.name = 'bigPlane';
+            };
+            PlaneFactory.prototype.AttackPlane = function(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 125;
+                this.blood = 200;
+                this.name = 'AttackPlane';
+                this.attack = function () {
+                    console.log('biu')
+                }
+            }
+
+            // 最后我去生成对象的时候我是这么调用的
+            let oAp = PlaneFactory.create('AttackPlane', 10, 20);
+            let oAp1 = PlaneFactory.create('AttackPlane', 10, 20);
+            let oSp = PlaneFactory.create('SmallPlane', 20, 30);
+            let oBp = PlaneFactory.create('BigPlane', 30, 40);
+
+            // 我之后如果想要给大家都添加上一个方法的话,就只需要在父类的原型上面去添加就可以了,这样所有的对象就都可以使用了
+            PlaneFactory.prototype.die = function () {
+                alert('boomb');
+            };
+
+
+            // 装饰者模式调用:
+            // 我没有用继承的方式调用,直接调用的是我创建在里面的方法
+            // 收集装饰该对象的方法
+            oAp.decorate('eatOneLife'); // 比如oAp吃了一个加生命的东西
+            oAp.decorate('eatTwoLife'); // 又吃了一个大血
+            oAp.remove('eatTwoLife'); // 把大血删了
+            oSp.decorate('eatTwoLife'); // oSp吃了一个大血
+            // 执行作用在该对象上面的方法
+            oAp.update(); // 这么一执行,oAp就加了100血
+            oSp.update(); // oSp加了200血,和oAp相互不影响
+
+            // 但是一个list会适用于一个类的飞机
+            oAp1.update(); // 我这里虽然oAp1没有吃血,但是我的list是作用于那一类的,因为我在定义的时候是一个类继承过了就不继承了,就只有继承的时候才新建一个PlaneFactory,所以他和oAp用的是同一个list,所以update的时候就也会增加血量
+
+            // 如果我不想一个类用一个对象,想要每一个对象都用自己的就如51行那么写,把总的写在PlaneFactory中的list去掉
+
+        </script>
+    </body>
+</html>
