@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>观察者模式</title>
+    </head>
+    <body>
+        <script>
+            // 定义: 定义对象间的一种一对多的依赖关系.当一个对象的状态发生改变时,所有依赖于他的对象都将得到通知.
+            // 事实上,只要你曾经在DOM节点上绑定过时间函数,那么你就曾经使用过观察车模式了!
+            // 比如我一个click事件上面绑定了很多个事件处理函数,那么一旦触发了click事件,这些个所有的绑定的函数就都会被触发
+
+            // 举例:订阅公众号,我们不管订阅我们的对象是什么样的只要他订阅我了.我的状态一改变,那他们就都会收到通知
+
+            // 我要写一个事件模块: 他里面会有几个功能:
+            // 1.on 可以自定义绑定事件
+            // 2.emmit 可以主动触发我的自定义绑定事件
+            // 3.empty 可以清空我绑定过的自定义事件
+            // 4.remove 清除一个我绑定过的事件
+            function Event() {
+                // 存储 不同时间类型对应的不同处理函数
+                this.cache = {}
+            }
+
+            Event.prototype.on = function(type, handle) {
+                if(!this.cache[type]) { // 看一下我这类型的对象我又没有绑过,没绑过就添加一个这个类型
+                    this.cache[type] = [handle];
+                }else{ //如果我有这个类型的话
+                    this.cache[type].push(handle)
+                }
+            };
+            Event.prototype.emmit = function() {
+
+            };
+            Event.prototype.empty = function() {
+
+            };
+            Event.prototype.remove = function(type, handle) {
+
+            };
+            Event.prototype.once = function() {
+
+            };
+
+            // 用的时候这么来用
+            let oE = new Event();
+            function deal1(time){
+                console.log('overtime1' + time);
+            }
+            function deal2(time){
+                console.log('overtime2' + time);
+            }
+            oE.on('over', deal1); //绑定自定义事件
+            oE.on('over', deal2);
+            oE.emmit('over'); // 触发事件
+
+            oE.remove('over', deal2) // 删除over事件的deal方法
+
+            oE.emmit('over'); // 再次触发事件
+        </script>
+    </body>
+</html>
