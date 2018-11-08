@@ -12,6 +12,10 @@
 
             // 举例:订阅公众号,我们不管订阅我们的对象是什么样的只要他订阅我了.我的状态一改变,那他们就都会收到通知
 
+            // 观察者模式可以提现前面讲的依赖倒置的原则
+            // 我触发多个方法的时候是用一个绑定事件来出发的,就相当于一个c来去控制a,和b的关系
+
+
             // 我要写一个事件模块: 他里面会有几个功能:
             // 1.on 可以自定义绑定事件
             // 2.emmit 可以主动触发我的自定义绑定事件
@@ -22,6 +26,11 @@
                 this.cache = {}
             }
 
+            // 观察者模式:
+            // 给PlaneFactory的原型上面继承一个这个Event模块
+            PlaneFactory.prototype = new Event();
+
+
             Event.prototype.on = function(type, handle) {
                 if(!this.cache[type]) { // 看一下我这类型的对象我又没有绑过,没绑过就添加一个这个类型
                     this.cache[type] = [handle];
@@ -30,16 +39,23 @@
                 }
             };
             Event.prototype.emmit = function() {
-
+                // 因为我不知道我这个里面的函数需要传几个参数,所以我就用arguments来接收
+                let type = arguments[0];
+                let arg = [].slice.call(arguments, 1);
+                for (let i = 0; i < this.cache[type].length; i++){
+                    this.cache[type][i].apply(this, arg);
+                }
             };
-            Event.prototype.empty = function() {
-
+            Event.prototype.empty = function(type) {
+                this.cache[type] = [];
             };
             Event.prototype.remove = function(type, handle) {
-
+                this.cache[type] = this.cache[type].filter(function (ele) {
+                    return ele !== handle;  // 把不等于我传进来的方法的返回
+                })
             };
-            Event.prototype.once = function() {
-
+            Event.prototype.once = function(type, handle) {
+                // 我添加进去的时候加一个flag,执行的时候判断一下,有没有哪一个有flag属性,如果这个属性为true就执行完了这个以后就把这个删掉
             };
 
             // 用的时候这么来用
@@ -52,11 +68,140 @@
             }
             oE.on('over', deal1); //绑定自定义事件
             oE.on('over', deal2);
-            oE.emmit('over'); // 触发事件
+            oE.emmit('over', '2018.11.8'); // 触发事件
 
-            oE.remove('over', deal2) // 删除over事件的deal方法
+            oE.remove('over', deal2); // 删除over事件的deal方法
 
-            oE.emmit('over'); // 再次触发事件
+            oE.emmit('over', '2018.11.8'); // 再次触发事件
+
+
+
+
+            // 把观察者模式添加到那个飞机工厂里面去
+            // 抽象工厂类
+            function PlaneFactory () {
+                // 用一个数组去接收我装饰者模式里面收集方法
+                this.decorate_list = []
+            }
+
+            // 装饰者模式实现
+
+            PlaneFactory.prototype.decorators = {
+                // 加生命的方法
+                eatOneLife: function (obj) {
+                    obj.blood += 100;
+                },
+                eatTwoLife: function (obj){
+                    obj.blood += 200;
+                },
+                eatShrinkLife: function (obj) {
+                    obj.blood -= 50;
+                }
+
+            };
+            // 收集对某对象的装饰描述
+            PlaneFactory.prototype.decorate = function(decorator){
+                // 当我多个类型的对象都想往list里面传方法的时候不会传到同一个this里面的
+                // 我每创建一个类型对象的时候都会重新new一个PlaneFactory,就会有不同的list
+                // 但是我这样只能保证每一个类有不同的对象,每个类创建的对象就共用一个list了
+                // 如果我想让每一个对象用自己的list就可以写到这个里面
+                // this.decorate_list = []
+                this.decorate_list.push(decorator);
+            };
+            // 让装饰方法作用在该对象的身上
+            PlaneFactory.prototype.update = function(){
+                for (let i = 0; i < this.decorate_list.length; i++){
+                    this.decorators[this.decorate_list[i]] && this.decorators[this.decorate_list[i]](this) // 把列表里面的每一个方法执行.执行的时候传入自己这个对象
+                }
+            };
+
+            // 我还可以给这个装饰者添加一些个方法
+            PlaneFactory.prototype.empty = function () {
+                this.decorate_list = [];
+            };
+            // 清除某一个方法
+            PlaneFactory.prototype.remove = function (type) {
+                this.decorate_list = this.decorate_list.filter(function(eleType){
+                    return !(eleType === type) // 我把不等于这个传进来的type值的方法返回给filter,然后替换掉原来的list
+                })
+
+            };
+
+            // 子类工厂都可以使用的公共方法
+            PlaneFactory.prototype.touch = function () {
+                this.blood -= 50;
+                if (this.blood === 0){
+                    this.die();
+                }
+            };
+
+
+            // 创建对象的接口
+
+            PlaneFactory.create = function(type) {
+
+                // 先判断一下我传入的这个类型,是不是存在符合这个类型的子类工厂
+                if(PlaneFactory.prototype[type] === undefined) {
+                    throw 'no this contructor';
+                }
+
+
+                if(PlaneFactory.prototype[type].prototype.__proto__ !== PlaneFactory.prototype){
+                    // 继承:子工厂的父级为原来的工厂
+                    PlaneFactory.prototype[type].prototype = new PlaneFactory();
+                }
+
+                // 创建对象
+                let arg = [].slice.call(arguments, 1);
+                let newPlane = new PlaneFactory.prototype[type](...arg);
+                return newPlane;
+            };
+
+
+            // 真正的去定义一些子类的工厂
+            PlaneFactory.prototype.SmallPlane = function (x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 100;
+                this.blood = 100;
+                this.name = 'SmallPlane';
+
+            };
+            PlaneFactory.prototype.BigPlane = function (x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 150;
+                this.height = 150;
+                this.blood = 200;
+                this.name = 'bigPlane';
+            };
+            PlaneFactory.prototype.AttackPlane = function(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 100;
+                this.height = 125;
+                this.blood = 200;
+                this.name = 'AttackPlane';
+                this.attack = function () {
+                    console.log('biu')
+                }
+            }
+
+            // 最后我去生成对象的时候我是这么调用的
+            let oAp = PlaneFactory.create('AttackPlane', 10, 20);
+            let oAp1 = PlaneFactory.create('AttackPlane', 10, 20);
+            let oSp = PlaneFactory.create('SmallPlane', 20, 30);
+            let oBp = PlaneFactory.create('BigPlane', 30, 40);
+
+
+            // 在最顶层的PlaneFactory上继承了Event之后那么他所生成的对象就都可以去调用它上面的方法了
+            // 我可以在上面绑定一个自定义的事件,然后去触发他
+            // 我也可以在每一个对象上面都绑定一个死亡的方法,然后集中的去emmit他,就可以一起触发了
+            oAp.on('over', function() {
+                this.die();
+            });
+            oAp.emmit('over')
         </script>
     </body>
 </html>
