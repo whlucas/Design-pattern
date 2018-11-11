@@ -18,14 +18,14 @@ SquareFactory.create = function (type, x, y, color) {
 // 我那边定义方块的时候只有位置和宽高信息,我这还想给他初始化一个颜色信息,传入想要初始化的方块和颜色
 // 在这个里面把方块的信息添加到dom上面
 SquareFactory.prototype.init = function (square, color) {
-    console.log(square.x * SQUAREWIDTH);
     square.viewContent.style.position = 'absolute'; //给他定位到父级
     // 由于我这里把square传进来了,那么我在new他的时候给他上面加了一些属性,这里可以直接用它上面的属性
     square.viewContent.style.width = square.width + 'px';
     square.viewContent.style.height = square.height + 'px';
-    square.viewContent.style.left = square.x * SQUAREWIDTH; // 他的位置等于他的行列号 + 单位长度
-    square.viewContent.style.top = square.y * SQUAREWIDTH;
+    square.viewContent.style.left = square.x * SQUAREWIDTH + 'px'; // 他的位置等于他的行列号 + 单位长度
+    square.viewContent.style.top = square.y * SQUAREWIDTH + 'px';
     square.viewContent.style.backgroundColor = color;
+
 };
 
 SquareFactory.prototype.Floor = function (x, y, color) {
