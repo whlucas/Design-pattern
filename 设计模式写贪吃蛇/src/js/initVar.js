@@ -33,6 +33,8 @@ var Stone = tool.extends(Square);
 
 var Food = tool.single(Square);
 
+let Snake = tool.single(); // 他就是一个抽象的蛇不需要坐标,所以不需要继承,如果我只有一条蛇就写成单例,如果有好几条蛇就直接 = function () {};
+
 var SnakeHead = tool.single(Square);
 
 var SnakeBody = tool.extends(Square);
