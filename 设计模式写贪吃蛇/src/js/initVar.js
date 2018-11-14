@@ -21,8 +21,12 @@ function Square (x, y, width, height, viewContent){
     this.viewContent = viewContent || document.createElement('div') // 我把这个格子创建到哪个dom上面,如果没传我就自己创建一个dom
 }
 
-Square.prototype.touch = function () {
-    console.log(0)
+// 因为我在创建蛇头的时候蛇头是单例模式,所以我在创建时候没法更新这个蛇头的坐标,所以我在这里强行的给他来一个修改蛇头属性的方法
+Square.prototype.update = function (x, y){
+    this.x = x;
+    this.y = y;
+    this.viewContent.style.left = x * SQUAREWIDTH + 'px';
+    this.viewContent.style.top = y * SQUAREWIDTH + 'px';
 };
 
 // 定义子类
@@ -43,6 +47,12 @@ var Ground = tool.single(Square);
 
 var Game = tool.single(Square);
 
+// 用一个对象集合所有的策略消息,策略枚举,因为我这个方块在出厂的时候还没有引入snake.js,上面没法直接绑定策略,所以就在这里定定一个可以放回策略名的东西,然后在出厂的时候在touch方法上面来调用这个对象
+let STRATEGYNUM = {
+    move: 'MOVE',
+    eat: 'EAT',
+    die: 'DIE'
+};
 
 
 

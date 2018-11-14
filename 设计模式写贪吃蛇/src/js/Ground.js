@@ -1,4 +1,4 @@
-var ground = new Ground(BASE_X_POINT, BASE_Y_POINT, xLen * SQUAREWIDTH, yLen * SQUAREWIDTH);
+let ground = new Ground(BASE_X_POINT, BASE_Y_POINT, xLen * SQUAREWIDTH, yLen * SQUAREWIDTH);
 
 // 在这个广场上面添加一个初始化方法
 ground.init = function () {
