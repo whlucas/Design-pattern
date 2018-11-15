@@ -43,13 +43,14 @@ SquareFactory.prototype.Stone = function (x, y, color) {
 };
 
 SquareFactory.prototype.Food = function (x, y, color) {
-    var food = new Food(x, y, SQUAREWIDTH, SQUAREWIDTH);
+    let food = new Food(x, y, SQUAREWIDTH, SQUAREWIDTH);
     this.init(food, color, STRATEGYNUM.eat);
+    food.update(x, y); // 因为是单例,所以之后再创建的话我希望能修改一下坐标
     return food;
 };
 
 SquareFactory.prototype.SnakeHead = function (x, y, color) {
-    var sh = new SnakeHead(x, y, SQUAREWIDTH, SQUAREWIDTH);
+    let sh = new SnakeHead(x, y, SQUAREWIDTH, SQUAREWIDTH);
     this.init(sh, color, STRATEGYNUM.die);
     sh.update(x, y); // 因为是单例,所以之后再创建的话我希望能修改一下坐标
     return sh;

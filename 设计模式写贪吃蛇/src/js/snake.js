@@ -6,7 +6,7 @@ snake.tail = null;
 
 
 // 方向的枚举
-let DIRECTIONENUM = {
+let DIRECTIONNUM = {
     LEFT:　{
         x: -1,
         y: 0
@@ -57,13 +57,13 @@ snake.init = function (ground) { // 初始化整条蛇,需要把广场拿进来�
     ground.append(SnakeBody2);
 
     // 默认方向
-    snake.direction = DIRECTIONENUM.RIGHT;
+    snake.direction = DIRECTIONNUM.RIGHT;
 };
 
 // 引入策略处理
 // 我这个蛇拥有这么多的策略,之后多的策略可以之后再加
 snake.strategies = {
-    MOVE: function (snake, square, ground) {
+    MOVE: function (snake, square, ground, fromEat) {
         // 实现移动
         // 由于我下面没有人去调用我这个方法,所以我这个里面的this是指向window的,所以我这里需要传一个this,或者在下面执行这个函数的时候我apply(this,[])一下,在括号里面传参数
         // 这里直接把这个snake传进来也行
@@ -102,19 +102,28 @@ snake.strategies = {
         snake.head = newHead;
 
         // 删除蛇尾
-        // 因为我把蛇尾删了还的拿地板补上,所以要创建一个地板
-        let floor = SquareFactory.create('Floor', snake.tail.x, snake.tail.y, 'orange');
-        ground.remove(snake.tail.x, snake.tail.y);
-        ground.append(floor);
+        // 需不需要删除蛇尾我需要一个判断
+        if(!fromEat){ // 如果我这个MOVE调用不是从吃的地方来的就删除蛇尾
+            // 因为我把蛇尾删了还的拿地板补上,所以要创建一个地板
+            let floor = SquareFactory.create('Floor', snake.tail.x, snake.tail.y, 'orange');
+            ground.remove(snake.tail.x, snake.tail.y);
+            ground.append(floor);
 
-        // 更新蛇尾巴,让蛇尾巴等于上一个蛇身
-        snake.tail = snake.tail.last
+            // 更新蛇尾巴,让蛇尾巴等于上一个蛇身
+            snake.tail = snake.tail.last
+        }
+
     },
-    EAT: function () {
+    EAT: function (snake, square, ground) {
         // 实现吃
+        // 利用我前面写的move来实现吃
+        this.MOVE(snake, square, ground, true); // 这个true带表我这个MOVE执行的时候是从吃来的
+        game.score++;
+        createFood(ground);
     },
     DIE: function () {
         // game over
+        game.over();
     }
 };
 
